@@ -53,6 +53,13 @@ object Build : BuildType({
         }
 
         script {
+            name = "NPM Install"
+            scriptContent = """
+                npm install
+            """.trimIndent()
+        }
+
+        script {
             name = "Clone documentation repository"
             workingDir = "temp"
             scriptContent = """
@@ -85,6 +92,7 @@ object Build : BuildType({
                 
                 pandoc _combined.md --from=gfm --pdf-engine=wkhtmltopdf --output ../../../build/%Product%-docs.pdf -c ../../../styles.css --highlight-style=pygments
             """.trimIndent()
+            dockerImage = "pandoc/latex:latest"
         }
     }
 
@@ -93,5 +101,9 @@ object Build : BuildType({
     triggers {
         vcs {
         }
+    }
+
+    requirements {
+        contains("system.agent.name", "Linux")
     }
 })
