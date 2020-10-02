@@ -2,28 +2,31 @@ const fs = require('fs');
 const fsExtra = require('fs-extra');
 const parser = require('xml2json');
 const {argv} = require('yargs');
-const docsPath = './teamcity-documentation';
-const tempPath = './temp/teamcity-documentation';
 
-// Clear out the temp directory
-fsExtra.emptyDirSync('./temp/');
-
-// Copy files from the cloned docs to the temp directory
-fsExtra.copySync(docsPath, tempPath);
-
-// Read the docs tree hierarchy
-const xml = fs.readFileSync(tempPath + '/tc.tree');
-
-const productVersion = fs.readFileSync(tempPath + '/current.help.version').toString().trim();
-
-// Parse the XML topics to an object
-const topics = parser.toJson(xml, { object: true });
-
-var ignoreIds = [];
+var ignoreIds = [],
+    product = 'teamcity',   // Default product
+    tempPath, logoPath, productDisplayName, productVersion;
 
 if (argv.ignore) {
     ignoreIds = argv.ignore.split(',');
 }
+
+if (argv.product) {
+    product = argv.product.trim();
+}
+
+tempPath = `temp/${product}-documentation`;
+logoPath = `node_modules/@jetbrains/logos/${product}/og-image-1200x630.png`;
+
+// Read the docs tree hierarchy
+const xml = fs.readFileSync(tempPath + '/tc.tree');
+
+productVersion = fs.readFileSync(tempPath + '/current.help.version').toString().trim();
+
+// Parse the XML topics to an object
+const topics = parser.toJson(xml, { object: true });
+
+productDisplayName = topics['product-profile'].name;
 
 var date = new Date().toLocaleDateString("en-US", {
     weekday: 'long',
@@ -36,9 +39,9 @@ var formattedContent = `
 
 <div align="center">
     <br><br><br><br><br><br><br>
-    <img src="../../../teamcity_logos/icon-teamcity.png" width="300">
+    <img src="../../../${logoPath}" height="300">
     <br><br><br>
-    <h1>TeamCity ${productVersion}<br>Documentation</h1>
+    <h1>${productDisplayName} ${productVersion}<br>Documentation</h1>
     <br><br><br>
     <p>Generated on:<br>${date}</p>
 </div>
@@ -66,34 +69,22 @@ function updateMarkdownFile(topic) {
         // Replace the "See Also" at end of markdown files
         data = data.replace(/<seealso>([\s\S]*?)<\/seealso>/gm, '');
 
-        // Change heading indentations
-        /*data = data.replace(/\n#### /gm, '\n##### ');
-        data = data.replace(/\n### /gm, '\n#### ');
-        data = data.replace(/\n## /gm, '\n### ');*/
-
         // Replace main title with proper markdown title
         data = data.replace(/\[\/\/]: # \(title: ([\s\S]*?)\)/gm, '# $1');
 
         // Remove hyperlinks and just leave text
         data = data.replace(/(?<!!)\[(.*?)\]\((.*?)\)/gm, '$1');
-        //data = data.replace(/[^!]\[(.*?)\]\(.*?\)/gm, ' $1');
-        //data = data.replace(/[^!]\[([^\[]+)\]\((.*)\)/gm, '$1');
-        //data = data.replace(/\[([[:alnum:][:blank:]]*?)\]\(([\s\S]*?)\)/gm, '$1');
-        //data = data.replace(/\[([\s\S]*?)\]\(([\s\S]*?)\)/gm, '$1');
 
         // Remove videos
         data = data.replace(/<video([\s\S]*?)\/>/gm, '');
 
-        // Remove images
-        //data = data.replace(/<img([\s\S]*?)\/>/gm, '');
-
         // Remove notes
         data = data.replace(/\[\/\/\](.*)\)/gm, '');
 
-        // Format phrases that break pandoc
+        // Re-format phrases that break pandoc
         data = data.replace(/__DOMAIN\\username__/gm, '`DOMAIN\\username`');
 
-        // Page break after each physical markdown file
+        // Add a page break after each physical markdown file
         data += '\n<div style="page-break-after: always"></div>\n\n\n';
 
         // Replace the contents of the current markdown file with the formatted text
@@ -122,7 +113,7 @@ console.log('Processed a total of', x, 'files');
 
 // Write out the master markdown file containing all the content.
 // This will be converted to PDF separately by pandoc.
-fs.writeFile(tempPath + '/topics/master.md', formattedContent, 'utf8', function (err) {
+fs.writeFile(tempPath + '/topics/_combined.md', formattedContent, 'utf8', function (err) {
     if (err) {
         return console.log(err);
     }

@@ -1,5 +1,9 @@
-import jetbrains.buildServer.configs.kotlin.v2019_2.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
+import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
+import jetbrains.buildServer.configs.kotlin.v2019_2.project
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
+import jetbrains.buildServer.configs.kotlin.v2019_2.version
 
 /*
 The settings script is an entry point for defining a TeamCity
@@ -36,6 +40,55 @@ object Build : BuildType({
     vcs {
         root(DslContext.settingsRoot)
     }
+
+    params {
+        text("Product", "teamcity", "The name of the product to generate docs for")
+        text("Ignore", "teamcity-documentation.md", "Comma-separated list of markdown files to exclude")
+    }
+
+    steps {
+        script {
+            name = "Setup project"
+            scriptContent = "mkdir temp"
+        }
+
+        script {
+            name = "Clone documentation repository"
+            workingDir = "temp"
+            scriptContent = """
+                git clone https://github.com/JetBrains/%product%-documentation
+            """.trimIndent()
+        }
+
+        script {
+            name = "Copy images"
+            workingDir = "temp"
+            scriptContent = """
+                cd %Product%-documentation
+                
+                cp -r images/* topics/
+            """.trimIndent()
+        }
+
+        script {
+            name = "Generate master markdown file"
+            scriptContent = """
+                node index.js --product=%Product% --ignore=%Ignore%
+            """.trimIndent()
+        }
+
+        script {
+            name = "Generate PDF from markdown file"
+            workingDir = "temp"
+            scriptContent = """
+                cd %Product%-documentation/topics
+                
+                pandoc _combined.md --from=gfm --pdf-engine=wkhtmltopdf --output ../../../build/%Product%-docs.pdf -c ../../../styles.css --highlight-style=pygments
+            """.trimIndent()
+        }
+    }
+
+    artifactRules = "build"
 
     triggers {
         vcs {
