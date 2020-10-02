@@ -56,7 +56,7 @@ object Build : BuildType({
             name = "Clone documentation repository"
             workingDir = "temp"
             scriptContent = """
-                git clone https://github.com/JetBrains/%product%-documentation
+                git clone https://github.com/JetBrains/%Product%-documentation
             """.trimIndent()
         }
 
