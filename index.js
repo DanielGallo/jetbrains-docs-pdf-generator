@@ -3,7 +3,7 @@ const fsExtra = require('fs-extra');
 const parser = require('xml2json');
 const {argv} = require('yargs');
 
-var ignoreIds = [],
+var ignoreIds = [], // Array of markdown file names to exclude
     product = 'teamcity',   // Default product
     tempPath, logoPath, productDisplayName, productVersion;
 
@@ -26,15 +26,18 @@ productVersion = fs.readFileSync(tempPath + '/current.help.version').toString().
 // Parse the XML topics to an object
 const topics = parser.toJson(xml, { object: true });
 
+// Get the name of the product to include on the title page
 productDisplayName = topics['product-profile'].name;
 
-var date = new Date().toLocaleDateString("en-US", {
+// Current date, formatted nicely for the title page
+const date = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
 });
 
+// Start off with a title page showing the product logo, product name, version, and generated date
 var formattedContent = `
 
 <div align="center">
@@ -52,6 +55,12 @@ var formattedContent = `
 
 var x = 0;
 
+/*
+    Update each markdown file:
+        - Remove notes, videos, hyperlinks.
+        - Add a main title to the start of the file.
+        - Add a page break at the end of the file.
+ */
 function updateMarkdownFile(topic) {
     var filePath,
         data;
@@ -59,6 +68,7 @@ function updateMarkdownFile(topic) {
     if (topic.id !== undefined
         && topic.id.indexOf('.md') > 0
         && !ignoreIds.includes(topic.id)) {
+
         console.log('Processing file:', topic.id);
         x ++;
 
@@ -66,7 +76,7 @@ function updateMarkdownFile(topic) {
 
         data = fs.readFileSync(filePath).toString();
 
-        // Replace the "See Also" at end of markdown files
+        // Remove the "See Also" at end of markdown files
         data = data.replace(/<seealso>([\s\S]*?)<\/seealso>/gm, '');
 
         // Replace main title with proper markdown title
@@ -88,11 +98,7 @@ function updateMarkdownFile(topic) {
         data += '\n<div style="page-break-after: always"></div>\n\n\n';
 
         // Replace the contents of the current markdown file with the formatted text
-        fs.writeFile(filePath, data, 'utf8', function (err) {
-            if (err) {
-                return console.log(err);
-            }
-        });
+        fs.writeFileSync(filePath, data);
 
         // Append the content from current markdown file to a master string containing content of all markdown files
         formattedContent += data;
@@ -106,15 +112,11 @@ function updateMarkdownFile(topic) {
     }
 }
 
-// Kick off the process with top level node
+// Kick off the process with the top-level node
 updateMarkdownFile(topics['product-profile']);
 
 console.log('Processed a total of', x, 'files');
 
-// Write out the master markdown file containing all the content.
-// This will be converted to PDF separately by pandoc.
-fs.writeFile(tempPath + '/topics/_combined.md', formattedContent, 'utf8', function (err) {
-    if (err) {
-        return console.log(err);
-    }
-});
+// Write out the combined markdown file containing all of the content.
+// This will need to be converted to PDF separately by pandoc.
+fs.writeFileSync(tempPath + '/topics/_combined.md', formattedContent);
