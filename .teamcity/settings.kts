@@ -49,7 +49,10 @@ object Build : BuildType({
     steps {
         script {
             name = "Setup project"
-            scriptContent = "mkdir temp"
+            scriptContent = """
+                rm -rf temp
+                mkdir temp
+            """.trimIndent()
         }
 
         script {
