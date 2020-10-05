@@ -1,2 +1,2 @@
-FROM pandoc/latex:latest
+FROM pandoc/core:latest
 RUN apk --no-cache add wkhtmltopdf
