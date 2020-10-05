@@ -1,6 +1,5 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dockerCommand
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.project
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
@@ -85,31 +84,10 @@ object Build : BuildType({
         }
 
         script {
-            name = "Generate master markdown file"
+            name = "Generate PDF file"
             scriptContent = """
                 node index.js --product=%Product% --ignore=%Ignore%
             """.trimIndent()
-        }
-
-        dockerCommand {
-            name = "Build docker image"
-            commandType = build {
-                source = file {
-                    path = "Dockerfile"
-                }
-                namesAndTags = "gallo-pandoc"
-                commandArgs = "--pull"
-            }
-        }
-
-        script {
-            name = "Generate PDF from markdown file"
-            scriptContent = """
-                cd temp/%Product%-documentation/topics
-                
-                pandoc _combined.md --from=gfm --pdf-engine=wkhtmltopdf --output ../../../build/%Product%-docs.pdf -c ../../../styles.css --highlight-style=pygments
-            """.trimIndent()
-            dockerImage = "gallo-pandoc"
         }
     }
 

@@ -1,8 +1,12 @@
 html {
-    font-size: 22pt;
+    font-size: 14px;
     overflow-y: scroll;
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
+}
+
+.markdown-body {
+    font-size: 14px;
 }
 
 body {

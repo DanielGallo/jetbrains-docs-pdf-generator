@@ -2,6 +2,8 @@ const fs = require('fs');
 const fsExtra = require('fs-extra');
 const parser = require('xml2json');
 const {argv} = require('yargs');
+const mdpdf = require('mdpdf');
+const path = require('path');
 
 var ignoreIds = [], // Array of markdown file names to exclude
     product = 'teamcity',   // Default product
@@ -120,3 +122,22 @@ console.log('Processed a total of', x, 'files');
 // Write out the combined markdown file containing all of the content.
 // This will need to be converted to PDF separately by pandoc.
 fs.writeFileSync(tempPath + '/topics/_combined.md', formattedContent);
+
+let pdfOptions = {
+    source: path.join(__dirname, tempPath + '/topics/_combined.md'),
+    destination: path.join(__dirname, `build/${productDisplayName}-docs.pdf`),
+    styles: path.join(__dirname, 'styles.css'),
+    defaultStyle: true,
+    ghStyle: true,
+    pdf: {
+        format: 'A4',
+        orientation: 'portrait'
+    }
+};
+
+// Convert the combined markdown file to PDF
+mdpdf.convert(pdfOptions).then((pdfPath) => {
+    console.log('Generated PDF at the following path:', pdfPath);
+}).catch((err) => {
+    console.error(err);
+});
