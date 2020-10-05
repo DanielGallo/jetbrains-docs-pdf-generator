@@ -97,7 +97,6 @@ object Build : BuildType({
                 namesAndTags = "gallo-pandoc"
                 commandArgs = "--pull"
             }
-            param("dockerImage.platform", "linux")
         }
 
         script {
@@ -119,7 +118,4 @@ object Build : BuildType({
         }
     }
 
-    requirements {
-        contains("system.agent.name", "Linux")
-    }
 })
