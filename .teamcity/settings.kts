@@ -53,6 +53,9 @@ object Build : BuildType({
             scriptContent = """
                 rm -rf temp
                 mkdir temp
+                
+                rm -rf build
+                mkdir build
             """.trimIndent()
         }
 
@@ -101,9 +104,8 @@ object Build : BuildType({
 
         script {
             name = "Generate PDF from markdown file"
-            workingDir = "temp"
             scriptContent = """
-                cd %Product%-documentation/topics
+                cd temp/%Product%-documentation/topics
                 
                 pandoc _combined.md --from=gfm --pdf-engine=wkhtmltopdf --output ../../../build/%Product%-docs.pdf -c ../../../styles.css --highlight-style=pygments
             """.trimIndent()
