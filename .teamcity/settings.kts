@@ -48,7 +48,7 @@ object Build : BuildType({
 
     vcs {
         root(DslContext.settingsRoot)
-        root(DocumentationVcs, "+:. => temp")
+        root(DocumentationVcs, "+:. => temp/%Product%-documentation")
     }
 
     params {
