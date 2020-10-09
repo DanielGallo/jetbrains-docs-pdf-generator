@@ -1,3 +1,4 @@
+import jetbrains.buildServer.configs.kotlin.v10.vcs.GitVcsRoot
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
@@ -34,11 +35,17 @@ project {
     buildType(Build)
 }
 
+object DocumentationVcs : GitVcsRoot({
+    name = "DocumentationVcs"
+    url = "https://github.com/JetBrains/teamcity-documentation.git"
+})
+
 object Build : BuildType({
     name = "Build"
 
     vcs {
         root(DslContext.settingsRoot)
+        root(DocumentationVcs, "+:. => temp")
     }
 
     params {
@@ -50,9 +57,6 @@ object Build : BuildType({
         script {
             name = "Setup project"
             scriptContent = """
-                rm -rf temp
-                mkdir temp
-                
                 rm -rf build
                 mkdir build
             """.trimIndent()
@@ -62,14 +66,6 @@ object Build : BuildType({
             name = "NPM Install"
             scriptContent = """
                 npm install
-            """.trimIndent()
-        }
-
-        script {
-            name = "Clone documentation repository"
-            workingDir = "temp"
-            scriptContent = """
-                git clone https://github.com/JetBrains/%Product%-documentation
             """.trimIndent()
         }
 
