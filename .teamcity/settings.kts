@@ -30,15 +30,17 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 
 version = "2020.1"
 
-project {
-
-    buildType(Build)
-}
-
 object DocumentationVcs : GitVcsRoot({
     name = "DocumentationVcs"
     url = "https://github.com/JetBrains/teamcity-documentation.git"
 })
+
+project {
+
+    vcsRoot(DocumentationVcs)
+    
+    buildType(Build)
+}
 
 object Build : BuildType({
     name = "Build"
