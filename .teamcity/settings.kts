@@ -33,12 +33,13 @@ version = "2020.1"
 object DocumentationVcs : GitVcsRoot({
     name = "DocumentationVcs"
     url = "https://github.com/JetBrains/teamcity-documentation.git"
+    branch = "+:refs/heads/2020.1"
 })
 
 project {
 
     vcsRoot(DocumentationVcs)
-    
+
     buildType(Build)
 }
 
