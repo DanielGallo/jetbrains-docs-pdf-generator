@@ -1,2 +1,3 @@
 FROM alpeware/chrome-headless-trunk
-RUN apk add --update nodejs npm
+RUN apt-get update
+RUN apt-get install nodejs
