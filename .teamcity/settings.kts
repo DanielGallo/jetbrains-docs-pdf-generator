@@ -84,7 +84,7 @@ object Build : BuildType({
 
         script {
             name = "Generate PDF file"
-            dockerImage = "kasmweb/chrome:latest"
+            dockerImage = "kasmweb/chrome"
             scriptContent = """
                 node index.js --product=%Product% --ignore=%Ignore%
             """.trimIndent()
