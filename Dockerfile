@@ -1,2 +1,2 @@
-FROM pandoc/core:latest
-RUN apk --no-cache add wkhtmltopdf
+FROM alpeware/chrome-headless-trunk
+RUN apk add --update nodejs npm

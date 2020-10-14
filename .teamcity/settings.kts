@@ -1,6 +1,7 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dockerCommand
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.project
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
@@ -82,9 +83,21 @@ object Build : BuildType({
             """.trimIndent()
         }
 
+        dockerCommand {
+            name = "Build docker image"
+            commandType = build {
+                source = file {
+                    path = "Dockerfile"
+                }
+                namesAndTags = "gallo-chrome"
+                commandArgs = "--pull"
+            }
+            param("dockerImage.platform", "linux")
+        }
+
         script {
             name = "Generate PDF file"
-            dockerImage = "alpeware/chrome-headless-trunk"
+            dockerImage = "gallo-chrome"
             scriptContent = """
                 node index.js --product=%Product% --ignore=%Ignore%
             """.trimIndent()
