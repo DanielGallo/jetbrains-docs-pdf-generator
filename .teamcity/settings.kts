@@ -1,5 +1,6 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.dockerSupport
 import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dockerCommand
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
@@ -55,6 +56,11 @@ object Build : BuildType({
     params {
         text("Product", "teamcity", "The name of the product to generate docs for")
         text("Ignore", "teamcity-documentation.md", "Comma-separated list of markdown files to exclude")
+    }
+
+    features {
+        dockerSupport {
+        }
     }
 
     steps {
